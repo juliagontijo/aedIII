@@ -26,6 +26,38 @@ public class Aplication{
     }
 }
 
+class NoBucket{ 
+    private long cpfKey;
+    private long numRegistroArqMestre;
+
+    public NoBucket(){
+        cpfKey = -1;
+        numRegistroArqMestre = -1;
+    }
+
+    public NoBucket(long CPF, long Num){
+        cpfKey = CPF;
+        numRegistroArqMestre = Num;
+    }
+
+    public boolean isFull(){
+        return (cpfKey != -1);
+    }
+
+    public void setValue(long CPF, long Num){
+        cpfKey = CPF;
+        numRegistroArqMestre = Num;
+    }
+
+    public long getCPFValue(){
+        return cpfKey;
+    }
+
+    public long getNumRegistroValue(){
+        return numRegistroArqMestre;
+    }
+}
+
 class Bucket implements Serializable{
     private int pLocal;
     private NoBucket[] no;
@@ -64,8 +96,9 @@ class Bucket implements Serializable{
         return true;
     }
 
-    public void addElement(long CPF, long num){
+    public boolean addElement(long CPF, long num){
         if(this.isFull()){
+            return false;
             //chamar função de dividir bucket;
             //chamar função addElement da classe Bucket recursivamente;
         }else{
@@ -75,6 +108,7 @@ class Bucket implements Serializable{
                     i=n;
                 }
             }
+            return true;
         }
     }
 
@@ -108,36 +142,73 @@ class Indice implements Serializable{
 
 }
 
-class NoBucket{ 
-    private long cpfKey;
-    private long numRegistroArqMestre;
+class NoDiretorio{
+    public int id;
+    public Bucket apontaBucket;
+    public NoDiretorio proxDirect;
 
-    public NoBucket(){
-        cpfKey = -1;
-        numRegistroArqMestre = -1;
+    public NoDiretorio(){
+        this.id = -1;
+        this.apontaBucket = null;
+        this.proxDirect = null;
     }
 
-    public NoBucket(long CPF, long Num){
-        cpfKey = CPF;
-        numRegistroArqMestre = num;
+    public NoDiretorio(int i, Bucket buck){
+        this.id = i;
+        this.apontaBucket = buck;
+        this.proxDirect = null;
     }
 
-    public boolean isFull(){
-        return (cpfKey != -1);
+}
+
+class Diretorio implements Serializable{
+    private int p; //profundidade
+    private NoDiretorio diretorio;
+
+    public Diretorio(){
+        this.p = pGlobal;
+        this.diretorio = new NoDiretorio();
     }
 
-    public void setValue(long CPF, long Num){
-        cpfKey = CPF;
-        numRegistroArqMestre = Num;
+    public Diretorio(int prof){
+        this.p = prof;
+        this.diretorio = new NoDiretorio();
     }
 
-    public long getCPFValue(){
-        return cpfKey;
+    public Diretorio(int prof, Bucket buck){
+        this.p = prof;
+        this.diretorio = new NoDiretorio();
+        this.diretorio.apontaBucket = buck;
     }
 
-    public long getNumRegistroValue(){
-        return numRegistroArqMestre;
+    public Diretorio(int prof, Bucket buck, NoDiretorio prox){
+        this.p = prof;
+        this.diretorio = new NoDiretorio();
+        this.diretorio.apontaBucket = buck;
+        this.diretorio.proxDirect = prox;
     }
+
+    public void setDiretorioProfundidade(int profundidade){
+        this.p = profundidade;
+    }
+
+    public int getDiretorioProfundidade(){
+        return this.p;
+    }
+
+    public int hashingKey(int keyCPF){
+        return (keyCPF % this.p);
+    }
+
+    public void extendDiretorio(){
+        this.setDiretorioProfundidade(this.p+1);
+        int qtdAumenta = (pow(2, this.p))/2;
+        for(int i=0; i<qtdAumenta; i++){
+            
+        }
+
+    }
+
 }
 
 class Prontuario implements Serializable{
@@ -145,49 +216,32 @@ class Prontuario implements Serializable{
     private Data dataNascimento;
     private String sexo;
     private String observacoes;
-}
 
-class NoDiretorio{
-    public int id;
-    public Bucket apontaBucket;
-    public NoDiretorio proxDirect;
-
-    public NoDiretorio(){
-        id = -1;
-        apontaBucket = null;
-        proxDirect = null;
+    Prontuario(){}
+    
+    public String getNome() {
+        return nome;
     }
-
-    public NoDiretorio(int i, Bucket buck){
-        id = i;
-        apontaBucket = buck;
-        proxDirect = null;
+    public void setNome(String nome) {
+        this.nome = nome;
     }
-
-}
-
-class Diretorio implements Serializable{
-    private int p; //profundidade
-    private noDiretorio diretorio;
-
-    public Diretorio(){
-        p = pGlobal;
+    public Data getDataNascimento() {
+        return dataNascimento;
     }
-
-    public Diretorio(int prof){
-        p = prof;
+    public void setDataNascimento(Data dataNascimento) {
+        this.dataNascimento = dataNascimento;
     }
-
-    public void setDiretorioProfundidade(int profundidade){
-        p = profundidade;
+    public String getSexo() {
+        return sexo;
     }
-
-    public int getDiretorioProfundidade(){
-        return p;
+    public void setSexo(String sexo) {
+        this.sexo = sexo;
     }
-
-    public int hashingKey(int keyCPF){
-        return (keyCPF % p);
+    public String getObservacoes() {
+        return observacoes;
+    }
+    public void setObservacoes(String observacoes) {
+        this.observacoes = observacoes;
     }
 
 }
@@ -196,4 +250,25 @@ class Data{
     int dia;
     int mes;
     int ano;
+
+    Data(){}
+
+    public int getDia() {
+        return dia;
+    }
+    public void setDia(int dia) {
+        this.dia = dia;
+    }
+    public int getMes() {
+        return mes;
+    }
+    public void setMes(int mes) {
+        this.mes = mes;
+    }
+    public int getAno() {
+        return ano;
+    }
+    public void setAno(int ano) {
+        this.ano = ano;
+    }
 }
